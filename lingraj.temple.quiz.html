@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingaraj Temple Quiz</title>
+    <!-- Elegant serif fonts for a traditional-meets-modern feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* ========== CSS RESET & BASE ========== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-deep: #5c3a21;
+            --bg-primary: #954535;
+            --bg-light: #b8765e;
+            --gold: #d4af37;
+            --gold-light: #e8d48b;
+            --gold-dark: #a8872a;
+            --cream: #f5e6c8;
+            --cream-light: #faf3e3;
+            --green-correct: #2d8a4e;
+            --green-glow: rgba(45, 138, 78, 0.5);
+            --red-wrong: #c0392b;
+            --red-glow: rgba(192, 57, 43, 0.5);
+            --text-dark: #2c1810;
+            --text-light: #f5e6c8;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+        }
+
+        body {
+            /* Layered background: deep base + warm gradient + pattern overlay */
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 100%, rgba(92, 58, 33, 0.6) 0%, transparent 70%),
+                linear-gradient(175deg, #7a3d2e 0%, #954535 30%, #8a3f30 60%, #5c3a21 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* ========== MANDALA / TEMPLE PATTERN BACKGROUND ========== */
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.06;
+            pointer-events: none;
+            /* SVG mandala pattern tiled */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23d4af37' stroke-width='0.8'%3E%3Ccircle cx='100' cy='100' r='80'/%3E%3Ccircle cx='100' cy='100' r='60'/%3E%3Ccircle cx='100' cy='100' r='40'/%3E%3Ccircle cx='100' cy='100' r='20'/%3E%3Cline x1='100' y1='20' x2='100' y2='180'/%3E%3Cline x1='20' y1='100' x2='180' y2='100'/%3E%3Cline x1='43' y1='43' x2='157' y2='157'/%3E%3Cline x1='157' y1='43' x2='43' y2='157'/%3E%3Cpath d='M100 20 Q120 50 100 80 Q80 50 100 20Z'/%3E%3Cpath d='M100 180 Q120 150 100 120 Q80 150 100 180Z'/%3E%3Cpath d='M20 100 Q50 80 80 100 Q50 120 20 100Z'/%3E%3Cpath d='M180 100 Q150 80 120 100 Q150 120 180 100Z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 200px 200px;
+        }
+
+        /* Temple silhouette at the bottom */
+        .temple-silhouette {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 0;
+            opacity: 0.07;
+            pointer-events: none;
+        }
+
+        /* Floating golden particles */
+        .particles-container {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatParticle linear infinite;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0);
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-10vh) scale(1);
+            }
+        }
+
+        /* ========== DECORATIVE BORDER FRAME ========== */
+        .ornate-border {
+            position: fixed;
+            inset: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ornate-border::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 6px;
+        }
+
+        /* Corner ornaments */
+        .corner-ornament {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        .corner-ornament::before,
+        .corner-ornament::after {
+            content: '';
+            position: absolute;
+            background: var(--gold);
+        }
+
+        .corner-tl { top: 16px; left: 16px; }
+        .corner-tl::before { top: 0; left: 0; width: 30px; height: 1.5px; }
+        .corner-tl::after { top: 0; left: 0; width: 1.5px; height: 30px; }
+
+        .corner-tr { top: 16px; right: 16px; }
+        .corner-tr::before { top: 0; right: 0; width: 30px; height: 1.5px; }
+        .corner-tr::after { top: 0; right: 0; width: 1.5px; height: 30px; }
+
+        .corner-bl { bottom: 16px; left: 16px; }
+        .corner-bl::before { bottom: 0; left: 0; width: 30px; height: 1.5px; }
+        .corner-bl::after { bottom: 0; left: 0; width: 1.5px; height: 30px; }
+
+        .corner-br { bottom: 16px; right: 16px; }
+        .corner-br::before { bottom: 0; right: 0; width: 30px; height: 1.5px; }
+        .corner-br::after { bottom: 0; right: 0; width: 1.5px; height: 30px; }
+
+        /* ========== SCREENS CONTAINER ========== */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+        }
+
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ========== START SCREEN ========== */
+        #start-screen .content-wrapper {
+            text-align: center;
+            padding: 40px;
+            max-width: 600px;
+        }
+
+        /* Decorative top ornament */
+        .temple-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 28px;
+            position: relative;
+            animation: gentlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.3)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.5)); }
+        }
+
+        .temple-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Decorative divider line */
+        .divider {
+            width: 120px;
+            height: 2px;
+            margin: 20px auto;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .main-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            line-height: 1.2;
+            text-shadow:
+                0 0 30px rgba(212, 175, 55, 0.2),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--cream);
+            opacity: 0.8;
+            letter-spacing: 1px;
+            margin-bottom: 36px;
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn-primary {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dark) 100%);
+            border: none;
+            padding: 16px 48px;
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow:
+                0 4px 15px rgba(212, 175, 55, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 52px;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            filter: blur(12px);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.06) translateY(-2px);
+            box-shadow:
+                0 0 25px rgba(212, 175, 55, 0.5),
+                0 0 50px rgba(212, 175, 55, 0.2),
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* ========== QUIZ SCREEN ========== */
+        #quiz-screen .quiz-container {
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        /* Progress bar */
+        .progress-wrapper {
+            margin-bottom: 32px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.7;
+        }
+
+        .progress-count {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            color: var(--cream);
+            opacity: 0.6;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(212, 175, 55, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -2px;
+            width: 8px;
+            height: 8px;
+            background: var(--gold-light);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+        }
+
+        /* Question card */
+        .question-card {
+            background: linear-gradient(
+                145deg,
+                rgba(92, 58, 33, 0.85) 0%,
+                rgba(80, 45, 25, 0.9) 50%,
+                rgba(70, 40, 22, 0.85) 100%
+            );
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 40px 36px;
+            backdrop-filter: blur(10px);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(212, 175, 55, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: cardAppear 0.5s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Inner decorative border on card */
+        .question-card::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 16px;
+            pointer-events: none;
+        }
+
+        .question-number {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.6;
+            margin-bottom: 14px;
+        }
+
+        .question-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.2rem, 3vw, 1.55rem);
+            font-weight: 700;
+            color: var(--cream-light);
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        /* Option buttons */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .option-btn {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--cream);
+            background: rgba(149, 69, 53, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 16px 24px;
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .option-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            flex-shrink: 0;
+            transition: all 0.35s ease;
+        }
+
+        .option-text {
+            flex: 1;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            transform: scale(1.02) translateX(4px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow:
+                0 0 20px rgba(212, 175, 55, 0.15),
+                0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .option-btn:hover:not(.disabled)::before {
+            opacity: 1;
+        }
+
+        .option-btn:hover:not(.disabled) .option-label {
+            background: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Correct answer state */
+        .option-btn.correct {
+            border-color: var(--green-correct);
+            background: rgba(45, 138, 78, 0.3);
+            box-shadow: 0 0 25px var(--green-glow);
+            transform: scale(1.02);
+        }
+
+        .option-btn.correct .option-label {
+            background: var(--green-correct);
+            color: #fff;
+            box-shadow: 0 0 12px var(--green-glow);
+        }
+
+        /* Wrong answer state */
+        .option-btn.wrong {
+            border-color: var(--red-wrong);
+            background: rgba(192, 57, 43, 0.25);
+            box-shadow: 0 0 25px var(--red-glow);
+            animation: shakeWrong 0.5s ease;
+        }
+
+        .option-btn.wrong .option-label {
+            background: var(--red-wrong);
+            color: #fff;
+            box-shadow: 0 0 12px var(--red-glow);
+        }
+
+        @keyframes shakeWrong {
+            0%, 100% { transform: translateX(0); }
+            15% { transform: translateX(-8px); }
+            30% { transform: translateX(8px); }
+            45% { transform: translateX(-6px); }
+            60% { transform: translateX(6px); }
+            75% { transform: translateX(-3px); }
+            90% { transform: translateX(3px); }
+        }
+
+        /* Disabled state */
+        .option-btn.disabled {
+            cursor: default;
+            opacity: 0.5;
+        }
+
+        .option-btn.correct.disabled,
+        .option-btn.wrong.disabled {
+            opacity: 1;
+        }
+
+        /* ========== RESULT SCREEN ========== */
+        #result-screen .result-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 550px;
+        }
+
+        .result-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .result-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
+        }
+
+        .result-icon.poor svg {
+            filter: drop-shadow(0 0 15px rgba(192, 57, 43, 0.4));
+        }
+
+        @keyframes resultPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            60% { transform: scale(1.15) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .result-icon {
+            animation: resultPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        .result-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .result-message {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            color: var(--cream);
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .score-display {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.5rem, 7vw, 4rem);
+            font-weight: 900;
+            color: var(--gold-light);
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+            margin: 20px 0;
+            line-height: 1;
+        }
+
+        .score-display span {
+            font-size: 0.5em;
+            opacity: 0.6;
+            font-weight: 400;
+        }
+
+        .score-detail {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--cream);
+            opacity: 0.7;
+            margin-bottom: 36px;
+        }
+
+        /* Score breakdown mini-cards */
+        .score-breakdown {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 36px;
+        }
+
+        .breakdown-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: rgba(92, 58, 33, 0.6);
+            animation: breakdownPop 0.4s ease both;
+        }
+
+        .breakdown-item:nth-child(1) { animation-delay: 0.5s; }
+        .breakdown-item:nth-child(2) { animation-delay: 0.65s; }
+        .breakdown-item:nth-child(3) { animation-delay: 0.8s; }
+
+        @keyframes breakdownPop {
+            from { transform: scale(0.5) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .breakdown-item.item-correct {
+            color: #5dda7d;
+            border-color: rgba(45, 138, 78, 0.4);
+            background: rgba(45, 138, 78, 0.15);
+        }
+
+        .breakdown-item.item-wrong {
+            color: #e74c3c;
+            border-color: rgba(192, 57, 43, 0.4);
+            background: rgba(192, 57, 43, 0.15);
+        }
+
+        /* ========== TOAST NOTIFICATION ========== */
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            z-index: 100;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.correct-toast {
+            background: rgba(45, 138, 78, 0.9);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(45, 138, 78, 0.4);
+            border: 1px solid rgba(93, 218, 125, 0.3);
+        }
+
+        .toast.wrong-toast {
+            background: rgba(192, 57, 43, 0.9);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(192, 57, 43, 0.4);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        /* ========== AMBIENT LIGHTING EFFECTS ========== */
+        .ambient-glow {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(80px);
+        }
+
+        .glow-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(212, 175, 55, 0.06);
+            top: -100px;
+            right: -100px;
+            animation: glowDrift1 8s ease-in-out infinite;
+        }
+
+        .glow-2 {
+            width: 350px;
+            height: 350px;
+            background: rgba(149, 69, 53, 0.1);
+            bottom: -80px;
+            left: -80px;
+            animation: glowDrift2 10s ease-in-out infinite;
+        }
+
+        .glow-3 {
+            width: 250px;
+            height: 250px;
+            background: rgba(212, 175, 55, 0.04);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: glowDrift3 6s ease-in-out infinite;
+        }
+
+        @keyframes glowDrift1 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-30px, 30px); }
+        }
+
+        @keyframes glowDrift2 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, -25px); }
+        }
+
+        @keyframes glowDrift3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        /* ========== REDUCED MOTION ========== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+            .particle { display: none; }
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            .question-card {
+                padding: 28px 20px;
+                border-radius: 16px;
+            }
+
+            .option-btn {
+                padding: 14px 16px;
+                font-size: 1rem;
+                gap: 10px;
+            }
+
+            .option-label {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
+
+            .ornate-border { inset: 6px; }
+            .corner-ornament { display: none; }
+
+            #start-screen .content-wrapper { padding: 24px; }
+            #result-screen .result-container { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background layers -->
+    <div class="bg-pattern" aria-hidden="true"></div>
+    <div class="particles-container" aria-hidden="true"></div>
+
+    <!-- Ambient lighting -->
+    <div class="ambient-glow glow-1" aria-hidden="true"></div>
+    <div class="ambient-glow glow-2" aria-hidden="true"></div>
+    <div class="ambient-glow glow-3" aria-hidden="true"></div>
+
+    <!-- Decorative frame -->
+    <div class="ornate-border" aria-hidden="true"></div>
+    <div class="corner-ornament corner-tl" aria-hidden="true"></div>
+    <div class="corner-ornament corner-tr" aria-hidden="true"></div>
+    <div class="corner-ornament corner-bl" aria-hidden="true"></div>
+    <div class="corner-ornament corner-br" aria-hidden="true"></div>
+
+    <!-- Temple silhouette at bottom -->
+    <div class="temple-silhouette" aria-hidden="true">
+        <svg width="600" height="180" viewBox="0 0 600 180" fill="none">
+            <path d="M300 10 L310 40 L320 35 L325 70 L340 65 L350 100 L370 95 L390 140 L420 135 L440 170 L160 170 L180 135 L210 140 L230 95 L250 100 L260 65 L275 70 L280 35 L290 40 Z" fill="rgba(212,175,55,0.4)"/>
+            <path d="M300 30 L308 55 L315 50 L318 78 L330 74 L340 105 L355 100 L370 140 L230 140 L245 100 L260 105 L270 74 L282 78 L285 50 L292 55 Z" fill="rgba(212,175,55,0.3)"/>
+            <rect x="270" y="140" width="60" height="30" rx="2" fill="rgba(212,175,55,0.2)"/>
+        </svg>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- ========== START SCREEN ========== -->
+    <section class="screen active" id="start-screen" aria-label="Start Screen">
+        <div class="content-wrapper">
+            <!-- Temple spire icon -->
+            <div class="temple-icon" aria-hidden="true">
+                <svg viewBox="0 0 80 80" fill="none">
+                    <path d="M40 5 L44 20 L48 18 L50 35 L55 33 L58 50 L65 48 L70 70 L10 70 L15 48 L22 50 L25 33 L30 35 L32 18 L36 20 Z" fill="url(#templeGrad)" stroke="rgba(212,175,55,0.6)" stroke-width="0.5"/>
+                    <rect x="30" y="70" width="20" height="8" rx="1" fill="url(#templeGrad)" stroke="rgba(212,175,55,0.4)" stroke-width="0.5"/>
+                    <circle cx="40" cy="55" r="4" fill="rgba(212,175,55,0.5)"/>
+                    <defs>
+                        <linearGradient id="templeGrad" x1="40" y1="5" x2="40" y2="78">
+                            <stop offset="0%" stop-color="#e8d48b"/>
+                            <stop offset="100%" stop-color="#d4af37"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
+            <h1 class="main-title">Lingaraj Temple Quiz</h1>
+            <div class="divider" aria-hidden="true"></div>
+            <p class="subtitle">Discover the spiritual heart of Bhubaneswar</p>
+            <button class="btn-primary" id="start-btn" aria-label="Start the quiz">
+                Start Quiz
+            </button>
+        </div>
+    </section>
+
+    <!-- ========== QUIZ SCREEN ========== -->
+    <section class="screen" id="quiz-screen" aria-label="Quiz Screen">
+        <div class="quiz-container">
+            <!-- Progress bar -->
+            <div class="progress-wrapper">
+                <div class="progress-info">
+                    <span class="progress-label">Progress</span>
+                    <span class="progress-count" id="progress-count">1 / 3</span>
+                </div>
+                <div class="progress-bar-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Question card -->
+            <div class="question-card" id="question-card">
+                <p class="question-number" id="question-number">Question 1</p>
+                <h2 class="question-text" id="question-text"></h2>
+                <div class="options-grid" id="options-grid" role="group" aria-label="Answer options">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== RESULT SCREEN ========== -->
+    <section class="screen" id="result-screen" aria-label="Result Screen">
+        <div class="result-container">
+            <div class="result-icon" id="result-icon" aria-hidden="true">
+                <!-- Trophy / star SVG injected via JS based on score -->
+            </div>
+            <h2 class="result-title" id="result-title">Quiz Complete</h2>
+            <p class="result-message" id="result-message"></p>
+            <div class="score-display" id="score-display"></div>
+            <p class="score-detail" id="score-detail"></p>
+            <div class="score-breakdown" id="score-breakdown" aria-label="Score breakdown">
+                <!-- Per-question result indicators -->
+            </div>
+            <button class="btn-primary" id="restart-btn" aria-label="Restart the quiz">
+                Restart Quiz
+            </button>
+        </div>
+    </section>
+
+    <script>
+        /* ==========================================================
+           QUIZ DATA — All questions, options, and correct answers
+           ========================================================== */
+        const quizData = [
+            {
+                question: "Where is the Lingaraj Temple located?",
+                options: ["Puri", "Bhubaneswar", "Cuttack"],
+                correct: 1  // Index of correct answer (Bhubaneswar)
+            },
+            {
+                question: "Lingaraj Temple is dedicated to which deity?",
+                options: ["Lord Vishnu", "Lord Shiva (Harihara form)", "Lord Brahma"],
+                correct: 1  // Index of correct answer
+            },
+            {
+                question: "The architectural style of Lingaraj Temple belongs to which type?",
+                options: ["Dravidian style", "Nagara style (Kalinga architecture)", "Mughal style"],
+                correct: 1  // Index of correct answer
+            }
+        ];
+
+        const optionLabels = ['A', 'B', 'C'];
+
+        /* ==========================================================
+           STATE
+           ========================================================== */
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = []; // Track correct/wrong per question
+        let isTransitioning = false;
+
+        /* ==========================================================
+           DOM REFERENCES
+           ========================================================== */
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const progressCount = document.getElementById('progress-count');
+        const progressFill = document.getElementById('progress-fill');
+        const progressBarTrack = document.querySelector('.progress-bar-track');
+        const questionNumber = document.getElementById('question-number');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const questionCard = document.getElementById('question-card');
+        const toastEl = document.getElementById('toast');
+
+        /* ==========================================================
+           PARTICLES — Create floating golden specks
+           ========================================================== */
+        function createParticles() {
+            const container = document.querySelector('.particles-container');
+            const count = 25;
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 3 + 1) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDuration = (Math.random() * 12 + 8) + 's';
+                particle.style.animationDelay = (Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        /* ==========================================================
+           SCREEN TRANSITIONS — Fade between screens
+           ========================================================== */
+        function switchScreen(fromScreen, toScreen) {
+            fromScreen.classList.remove('active');
+            // Small delay so both fades don't overlap awkwardly
+            setTimeout(() => {
+                toScreen.classList.add('active');
+            }, 100);
+        }
+
+        /* ==========================================================
+           TOAST NOTIFICATIONS
+           ========================================================== */
+        let toastTimeout = null;
+
+        function showToast(message, type) {
+            // Clear any existing timeout
+            if (toastTimeout) clearTimeout(toastTimeout);
+
+            toastEl.textContent = message;
+            toastEl.className = 'toast'; // Reset classes
+
+            // Force reflow for re-triggering animation
+            void toastEl.offsetWidth;
+
+            toastEl.classList.add(type + '-toast', 'show');
+
+            toastTimeout = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 1200);
+        }
+
+        /* ==========================================================
+           RENDER QUESTION — Build the question card UI
+           ========================================================== */
+        function renderQuestion() {
+            const data = quizData[currentQuestion];
+
+            // Update progress
+            progressCount.textContent = `${currentQuestion + 1} / ${quizData.length}`;
+            const progressPercent = ((currentQuestion) / quizData.length) * 100;
+            progressFill.style.width = progressPercent + '%';
+            progressBarTrack.setAttribute('aria-valuenow', progressPercent);
+
+            // Update question info
+            questionNumber.textContent = `Question ${currentQuestion + 1}`;
+            questionText.textContent = data.question;
+
+            // Re-trigger card animation
+            questionCard.style.animation = 'none';
+            void questionCard.offsetWidth;
+            questionCard.style.animation = 'cardAppear 0.5s ease-out';
+
+            // Build option buttons
+            optionsGrid.innerHTML = '';
+            data.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('option-btn');
+                btn.setAttribute('role', 'radio');
+                btn.setAttribute('aria-label', `Option ${optionLabels[index]}: ${option}`);
+
+                btn.innerHTML = `
+                    <span class="option-label">${optionLabels[index]}</span>
+                    <span class="option-text">${option}</span>
+                `;
+
+                btn.addEventListener('click', () => handleAnswer(index, btn));
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        /* ==========================================================
+           HANDLE ANSWER — Process user's selection
+           ========================================================== */
+        function handleAnswer(selectedIndex, selectedBtn) {
+            // Prevent multiple clicks or clicks during transition
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            const data = quizData[currentQuestion];
+            const allBtns = optionsGrid.querySelectorAll('.option-btn');
+            const isCorrect = selectedIndex === data.correct;
+
+            // Disable all buttons
+            allBtns.forEach(btn => btn.classList.add('disabled'));
+
+            // Highlight correct answer
+            allBtns[data.correct].classList.add('correct');
+
+            if (isCorrect) {
+                // Correct answer
+                score++;
+                userAnswers.push(true);
+                showToast('Correct! Well done.', 'correct');
+            } else {
+                // Wrong answer — highlight the wrong selection red
+                selectedBtn.classList.add('wrong');
+                userAnswers.push(false);
+                showToast('Incorrect. See the right answer.', 'wrong');
+            }
+
+            // Auto-advance after 1.3 seconds
+            setTimeout(() => {
+                currentQuestion++;
+
+                if (currentQuestion < quizData.length) {
+                    // More questions remaining
+                    renderQuestion();
+                    isTransitioning = false;
+                } else {
+                    // Quiz complete — fill progress bar to 100% first
+                    progressFill.style.width = '100%';
+                    progressBarTrack.setAttribute('aria-valuenow', 100);
+
+                    setTimeout(() => {
+                        showResult();
+                        isTransitioning = false;
+                    }, 400);
+                }
+            }, 1300);
+        }
+
+        /* ==========================================================
+           SHOW RESULT — Build the final score screen
+           ========================================================== */
+        function showResult() {
+            switchScreen(quizScreen, resultScreen);
+
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+            const scoreDisplay = document.getElementById('score-display');
+            const scoreDetail = document.getElementById('score-detail');
+            const scoreBreakdown = document.getElementById('score-breakdown');
+
+            // Choose icon and messaging based on score
+            let iconSvg, title, message;
+
+            if (score === quizData.length) {
+                // Perfect score
+                iconSvg = `<svg viewBox="0 0 100 100" fill="none">
+                    <polygon points="50,8 61,35 90,35 67,53 76,82 50,65 24,82 33,53 10,35 39,35" fill="url(#starGrad)" stroke="rgba(212,175,55,0.6)" stroke-width="1"/>
+                    <defs><linearGradient id="starGrad" x1="50" y1="8" x2="50" y2="82"><stop offset="0%" stop-color="#e8d48b"/><stop offset="100%" stop-color="#d4af37"/></linearGradient></defs>
+                </svg>`;
+                title = "Perfect Score";
+                message = "You truly know the Lingaraj Temple!";
+            } else if (score >= 2) {
+                // Good score
+                iconSvg = `<svg viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="url(#circGrad)" stroke-width="3"/>
+                    <polyline points="30,52 44,66 72,36" fill="none" stroke="#d4af37" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs><linearGradient id="circGrad" x1="10" y1="50" x2="90" y2="50"><stop offset="0%" stop-color="#e8d48b"/><stop offset="100%" stop-color="#d4af37"/></linearGradient></defs>
+                </svg>`;
+                title = "Great Job";
+                message = "You have good knowledge of the temple!";
+            } else {
+                // Low score
+                iconSvg = `<svg viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(192,57,43,0.6)" stroke-width="3"/>
+                    <path d="M35 40 L65 40 M35 55 L55 55" stroke="rgba(231,76,60,0.8)" stroke-width="5" stroke-linecap="round"/>
+                </svg>`;
+                title = "Keep Learning";
+                message = "Explore more about this magnificent temple!";
+                resultIcon.classList.add('poor');
+            }
+
+            resultIcon.innerHTML = iconSvg;
+            resultTitle.textContent = title;
+            resultMessage.textContent = message;
+
+            // Animate score number
+            scoreDisplay.innerHTML = `<span></span>`;
+            animateScore(score, quizData.length);
+
+            scoreDetail.textContent = `You got ${score} out of ${quizData.length} correct!`;
+
+            // Build per-question breakdown indicators
+            scoreBreakdown.innerHTML = '';
+            userAnswers.forEach((isCorrect, idx) => {
+                const item = document.createElement('div');
+                item.classList.add('breakdown-item');
+                item.classList.add(isCorrect ? 'item-correct' : 'item-wrong');
+                item.setAttribute('aria-label', `Question ${idx + 1}: ${isCorrect ? 'Correct' : 'Wrong'}`);
+                item.textContent = isCorrect ? '✓' : '✗';
+                scoreBreakdown.appendChild(item);
+            });
+        }
+
+        /* Animate the score counting up */
+        function animateScore(target, total) {
+            const scoreDisplay = document.getElementById('score-display');
+            let current = 0;
+            const duration = 800;
+            const stepTime = duration / target;
+
+            function step() {
+                if (current < target) {
+                    current++;
+                    scoreDisplay.innerHTML = `${current}<span> / ${total}</span>`;
+                    setTimeout(step, stepTime);
+                } else {
+                    scoreDisplay.innerHTML = `${target}<span> / ${total}</span>`;
+                }
+            }
+
+            // If score is 0, just show it immediately
+            if (target === 0) {
+                scoreDisplay.innerHTML = `0<span> / ${total}</span>`;
+            } else {
+                setTimeout(step, 300);
+            }
+        }
+
+        /* ==========================================================
+           RESET & START — Initialize or restart the quiz
+           ========================================================== */
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            isTransitioning = false;
+
+            // Remove poor class if it was added
+            document.getElementById('result-icon').classList.remove('poor');
+
+            switchScreen(startScreen, quizScreen);
+
+            // Render first question after transition starts
+            setTimeout(() => {
+                renderQuestion();
+            }, 200);
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            isTransitioning = false;
+
+            document.getElementById('result-icon').classList.remove('poor');
+
+            switchScreen(resultScreen, quizScreen);
+
+            setTimeout(() => {
+                renderQuestion();
+            }, 200);
+        }
+
+        /* ==========================================================
+           EVENT LISTENERS
+           ========================================================== */
+        startBtn.addEventListener('click', startQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Keyboard support — allow Enter/Space on focused option buttons
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.classList.contains('option-btn')) {
+                    e.preventDefault();
+                    activeElement.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
